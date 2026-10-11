@@ -1,1 +1,674 @@
-PLACEHOLDER
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>系统规划与管理师 · 综合模拟考试</title>
+<style>
+  :root{
+    --primary:#2563eb; --primary-dark:#1e40af; --bg:#f1f5f9; --card:#ffffff;
+    --text:#1e293b; --muted:#64748b; --border:#e2e8f0;
+    --correct:#16a34a; --correct-bg:#f0fdf4; --wrong:#dc2626; --wrong-bg:#fef2f2;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:"PingFang SC","Microsoft YaHei","Noto Sans SC",sans-serif;background:var(--bg);color:var(--text);line-height:1.7;}
+  header{position:sticky;top:0;z-index:50;background:linear-gradient(135deg,#1e3a8a,#2563eb);color:#fff;box-shadow:0 2px 12px rgba(0,0,0,.15);}
+  .header-inner{max-width:960px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+  .header-inner h1{font-size:18px;font-weight:700;letter-spacing:1px;}
+  .header-inner .sub{font-size:12px;opacity:.85;margin-top:2px;}
+  .timer-box{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:10px;padding:6px 16px;text-align:center;min-width:130px;}
+  .timer-box .label{font-size:11px;opacity:.85;}
+  .timer-box .time{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:2px;}
+  main{max-width:960px;margin:0 auto;padding:24px 20px 80px;}
+  /* ===== 开始界面 ===== */
+  #start-screen{max-width:960px;margin:0 auto;padding:48px 20px 60px;}
+  .start-hero{background:linear-gradient(135deg,#1e3a8a,#2563eb);color:#fff;border-radius:18px;padding:36px 28px;text-align:center;margin-bottom:28px;box-shadow:0 8px 30px rgba(30,58,138,.25);}
+  .start-hero h1{font-size:26px;letter-spacing:2px;margin-bottom:8px;}
+  .start-hero p{font-size:14px;opacity:.9;}
+  .mode-title{text-align:center;font-size:16px;color:var(--muted);margin:26px 0 16px;}
+  .mode-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;max-width:820px;margin:0 auto;}
+  .mode-card{background:#fff;border:2px solid var(--border);border-radius:14px;padding:18px 14px;text-align:center;cursor:pointer;transition:all .18s;user-select:none;}
+  .mode-card:hover{border-color:#93c5fd;transform:translateY(-2px);box-shadow:0 6px 16px rgba(37,99,235,.12);}
+  .mode-card.active{border-color:var(--primary);background:#eff6ff;box-shadow:0 4px 14px rgba(37,99,235,.18);}
+  .mode-card .icon{font-size:26px;margin-bottom:6px;}
+  .mode-card .name{font-weight:700;font-size:15px;}
+  .mode-card .desc{font-size:12px;color:var(--muted);margin-top:4px;}
+  .mode-card.all{grid-column:1/-1;padding:14px;}
+  .mode-card.all .name{font-size:16px;}
+  .start-actions{text-align:center;margin-top:30px;}
+  .start-hint{font-size:13px;color:var(--wrong);margin-top:12px;min-height:20px;}
+  /* ===== 考试界面 ===== */
+  .intro{background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:16px 20px;margin-bottom:24px;font-size:14px;color:#1e40af;}
+  .intro b{color:#1d4ed8;}
+  .intro ul{margin:6px 0 0 20px;}
+  section{margin-bottom:36px;}
+  .section-title{display:flex;align-items:baseline;gap:10px;margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid var(--primary);}
+  .section-title .num{background:var(--primary);color:#fff;border-radius:8px;padding:2px 12px;font-size:15px;font-weight:700;}
+  .section-title h2{font-size:19px;}
+  .section-title .meta{font-size:13px;color:var(--muted);}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+  .q-head{display:flex;gap:10px;margin-bottom:10px;font-weight:600;font-size:15px;}
+  .q-head .idx{flex-shrink:0;color:var(--primary);font-weight:700;}
+  .opts{display:grid;gap:8px;margin-top:6px;}
+  .opt{display:flex;align-items:flex-start;gap:10px;border:1px solid var(--border);border-radius:8px;padding:9px 12px;cursor:pointer;font-size:14px;transition:all .15s;background:#fff;}
+  .opt:hover{border-color:var(--primary);background:#f8faff;}
+  .opt .letter{flex-shrink:0;width:24px;height:24px;border-radius:50%;border:1px solid #cbd5e1;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--muted);background:#f8fafc;}
+  .opt input{display:none;}
+  .opt.selected{border-color:var(--primary);background:#eff6ff;}
+  .opt.selected .letter{background:var(--primary);border-color:var(--primary);color:#fff;}
+  .opt.correct{border-color:var(--correct);background:var(--correct-bg);}
+  .opt.correct .letter{background:var(--correct);border-color:var(--correct);color:#fff;}
+  .opt.wrong{border-color:var(--wrong);background:var(--wrong-bg);}
+  .opt.wrong .letter{background:var(--wrong);border-color:var(--wrong);color:#fff;}
+  .opt.locked{cursor:default;}
+  .judge-opts{display:flex;gap:12px;margin-top:6px;}
+  .judge-opts .opt{flex:1;justify-content:center;font-weight:600;}
+  .answer-line{margin-top:12px;font-size:13.5px;background:#f8fafc;border-left:3px solid var(--primary);padding:8px 12px;border-radius:0 8px 8px 0;display:none;}
+  .answer-line.show{display:block;}
+  .answer-line .ok{color:var(--correct);font-weight:700;}
+  .answer-line .no{color:var(--wrong);font-weight:700;}
+  .badge{display:inline-block;font-size:11px;padding:1px 8px;border-radius:999px;}
+  .badge.unanswered{background:#f1f5f9;color:#64748b;}
+  .case-desc{background:#f8fafc;border:1px dashed #cbd5e1;border-radius:12px;padding:18px 20px;margin-bottom:18px;font-size:14px;}
+  .case-desc h3{font-size:15px;margin-bottom:8px;color:var(--primary-dark);}
+  .case-desc table{width:100%;border-collapse:collapse;margin:10px 0;font-size:13px;background:#fff;}
+  .case-desc th,.case-desc td{border:1px solid var(--border);padding:7px 10px;text-align:left;vertical-align:top;}
+  .case-desc th{background:#eef2ff;color:#3730a3;}
+  textarea{width:100%;min-height:110px;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:14px;font-family:inherit;resize:vertical;background:#fff;}
+  textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.12);}
+  textarea:disabled{background:#f8fafc;color:#475569;}
+  .ref-answer{display:none;margin-top:12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px 14px;font-size:13.5px;}
+  .ref-answer.show{display:block;}
+  .ref-answer h4{color:#15803d;font-size:13.5px;margin-bottom:6px;}
+  .ref-answer ul{margin-left:18px;}
+  .submit-bar{position:sticky;bottom:0;background:rgba(255,255,255,.95);backdrop-filter:blur(8px);border-top:1px solid var(--border);padding:14px 20px;display:none;justify-content:center;gap:14px;align-items:center;z-index:40;}
+  .btn{border:none;border-radius:10px;padding:12px 40px;font-size:16px;font-weight:700;cursor:pointer;transition:all .15s;}
+  .btn-primary{background:var(--primary);color:#fff;box-shadow:0 4px 14px rgba(37,99,235,.35);}
+  .btn-primary:hover{background:var(--primary-dark);}
+  .btn-ghost{background:#e2e8f0;color:#334155;}
+  .btn-ghost:hover{background:#cbd5e1;}
+  .progress-pill{font-size:13px;color:var(--muted);}
+  #result{display:none;}
+  .score-hero{background:linear-gradient(135deg,#1e3a8a,#2563eb);color:#fff;border-radius:16px;padding:30px 20px;text-align:center;margin-bottom:24px;}
+  .score-hero .big{font-size:52px;font-weight:800;line-height:1.1;}
+  .score-hero .total{font-size:16px;opacity:.85;margin-top:4px;}
+  .score-hero .verdict{font-size:14px;margin-top:10px;opacity:.95;}
+  .score-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:24px;}
+  .score-cell{background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;}
+  .score-cell .t{font-size:13px;color:var(--muted);}
+  .score-cell .v{font-size:24px;font-weight:800;color:var(--primary);margin-top:4px;}
+  .score-cell .v small{font-size:13px;color:var(--muted);font-weight:400;}
+  .modal-mask{position:fixed;inset:0;background:rgba(15,23,42,.5);display:none;align-items:center;justify-content:center;z-index:100;}
+  .modal-mask.open{display:flex;}
+  .modal{background:#fff;border-radius:14px;padding:26px 30px;max-width:420px;width:90%;text-align:center;}
+  .modal h3{margin-bottom:10px;}
+  .modal p{font-size:14px;color:var(--muted);margin-bottom:20px;}
+  .modal .row{display:flex;gap:12px;justify-content:center;}
+  .modal .btn{padding:10px 26px;font-size:14px;}
+  /* ===== 续考提示条 ===== */
+  .resume-banner{max-width:960px;margin:0 auto;padding:14px 20px 0;}
+  .resume-inner{background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;box-shadow:0 2px 8px rgba(217,119,6,.08);}
+  .resume-inner .info{font-size:14px;color:#92400e;}
+  .resume-inner .info b{color:#b45309;}
+  .resume-inner .btns{display:flex;gap:10px;}
+  .resume-inner .btn{padding:8px 18px;font-size:13px;border-radius:8px;}
+  .btn-warn{background:#f59e0b;color:#fff;}
+  .btn-warn:hover{background:#d97706;}
+  @media (max-width:600px){.header-inner h1{font-size:15px;}.timer-box .time{font-size:18px;}.start-hero h1{font-size:20px;}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div>
+      <h1>系统规划与管理师 · 综合模拟考试</h1>
+      <div class="sub">《系统规划与管理师教程（第2版）》课后练习精选</div>
+    </div>
+    <div class="timer-box">
+      <div class="label">考试用时（正计时）</div>
+      <div class="time" id="timer">00:00:00</div>
+    </div>
+  </div>
+</header>
+
+<!-- ===== 续考提示条 ===== -->
+<div id="resume-banner" class="resume-banner" style="display:none;">
+  <div class="resume-inner">
+    <div class="info">检测到上次有未交卷的考试：<b id="resume-info"></b>。是否继续作答？</div>
+    <div class="btns">
+      <button class="btn btn-primary" id="btn-resume">继续考试</button>
+      <button class="btn btn-ghost" id="btn-discard">放弃并清除</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 开始界面：选择考试范围 ===== -->
+<div id="start-screen">
+  <div class="start-hero">
+    <h1>系统规划与管理师 · 综合模拟考试</h1>
+    <p>题目来源于《系统规划与管理师教程（第2版）》第一至第四篇课后练习</p>
+  </div>
+  <div class="mode-title">— 请选择本次考试范围（点击卡片可多选组合）—</div>
+  <div class="mode-grid">
+    <div class="mode-card all active" data-mode="all">
+      <div class="name">考全部</div>
+      <div class="desc">四大题型全部作答 · 满分 96 分</div>
+    </div>
+    <div class="mode-card active" data-mode="mcq">
+      <div class="icon">📝</div>
+      <div class="name">选择题</div>
+      <div class="desc">34 题 · 每题 2 分 · 共 68 分</div>
+    </div>
+    <div class="mode-card active" data-mode="tf">
+      <div class="icon">✅</div>
+      <div class="name">判断题</div>
+      <div class="desc">5 题 · 每题 2 分 · 共 10 分</div>
+    </div>
+    <div class="mode-card active" data-mode="case">
+      <div class="icon">📋</div>
+      <div class="name">案例题</div>
+      <div class="desc">1 个案例 · 6 小题 · 每题 3 分 · 共 18 分</div>
+    </div>
+    <div class="mode-card active" data-mode="essay">
+      <div class="icon">💡</div>
+      <div class="name">思考题</div>
+      <div class="desc">18 题 · 开放式问答 · 不计分</div>
+    </div>
+  </div>
+  <div class="start-actions">
+    <button class="btn btn-primary" id="btn-start" style="padding:14px 60px;">开始考试</button>
+    <div class="start-hint" id="start-hint"></div>
+  </div>
+</div>
+
+<main>
+  <div class="intro" id="intro" style="display:none;">
+    <b>考试说明</b>
+    <ul id="intro-list"></ul>
+  </div>
+
+  <div id="exam">
+    <section id="sec-mcq" style="display:none;">
+      <div class="section-title"><span class="num">一</span><h2>选择题</h2><span class="meta" id="mcq-meta"></span></div>
+      <div id="mcq-list"></div>
+    </section>
+
+    <section id="sec-tf" style="display:none;">
+      <div class="section-title"><span class="num">二</span><h2>判断题</h2><span class="meta">正确的选「√」，错误的选「×」</span></div>
+      <div id="tf-list"></div>
+    </section>
+
+    <section id="sec-case" style="display:none;">
+      <div class="section-title"><span class="num">三</span><h2>案例题</h2><span class="meta">阅读案例，回答 ①～⑥</span></div>
+      <div class="case-desc">
+        <h3>【案例说明】</h3>
+        <p>B 公司为某银行客户服务超过 10 年，该银行 X 项目的重大故障率和可用性指标已转，但客户近两年的满意度并不高，甚至有降低的趋势。</p>
+        <p>B 公司委派小王针对该银行客户近几年的服务做回顾分析，争取进一步提高与客户的沟通交流。小王首先从内部发起回顾活动，然后与客户各部门进行沟通，发现以往与客户的交流沟通并对其有效性有所忽视。为提高服务回顾的有效性，小王特制定如下服务回顾机制：</p>
+        <table>
+          <tr><th>级别</th><th>内容</th><th>频率</th></tr>
+          <tr><td>一级</td><td>针对重大事件、特殊事件的沟通，包括服务内容变更、客户投诉等</td><td>①</td></tr>
+          <tr><td>二级</td><td>项目月度例会，向客户汇报当月服务情况，包括服务量、SLA 达成率、当月重大事件等内容</td><td>②</td></tr>
+          <tr><td>三级</td><td>向客户汇报项目运营情况，包括服务数据分析、SLA 达成率、客户满意度、服务改进计划等</td><td>每月度</td></tr>
+          <tr><td>四级</td><td>合作年度回顾，回顾项目的一</td><td>每年度</td></tr>
+        </table>
+        <p>结合案例，请选择 ①～⑥ 的正确选项。</p>
+      </div>
+      <div id="case-list"></div>
+    </section>
+
+    <section id="sec-essay" style="display:none;">
+      <div class="section-title"><span class="num">四</span><h2>思考题</h2><span class="meta">开放式问答，不计分，交卷后显示参考答案</span></div>
+      <div id="essay-list"></div>
+    </section>
+  </div>
+
+  <div id="result"></div>
+</main>
+
+<div class="submit-bar" id="submit-bar">
+  <span class="progress-pill" id="progress-pill"></span>
+  <button class="btn btn-primary" id="btn-submit">交 卷</button>
+</div>
+
+<div class="modal-mask" id="modal">
+  <div class="modal">
+    <h3>确认交卷？</h3>
+    <p id="modal-text"></p>
+    <div class="row">
+      <button class="btn btn-ghost" id="btn-cancel">继续答题</button>
+      <button class="btn btn-primary" id="btn-confirm">确认交卷</button>
+    </div>
+  </div>
+</div>
+<script>
+/* ================= 题库数据（源自课本练习图片） ================= */
+
+const MCQ = [
+ {q:"信息系统的通用结构自底向上的第四层是____。",o:["基础设施层","资源管理层","业务逻辑层","应用表现层"],a:2},
+ {q:"OSI 和 TCP/IP 模型都为不同设备之间的网络通信提供了框架与规范，从而使得网络通信变得可靠和高效。OSI 模型中的功能层次包括____。①应用层 ②会话层 ③网际层 ④网络接口层 ⑤物理层 ⑥硬件层",o:["①②③","①③④","①②⑤","②③⑥"],a:2},
+ {q:"在大规模网络中，网络安全数据和日志数据由海量设备和多个应用系统产生，且这些安全数据和日志数据缺乏统一标准与关联，在此基础上进行数据分析，无法得到全局精准的分析结果。因此需要通过____实现 PB 量级多元异构数据的采集汇聚、多维度深度融合、统一存储管理和安全共享。",o:["海量多元异构数据的汇聚融合技术","面向多类型的网络安全威胁评估技术","网络安全态势评估与决策支撑技术","网络安全态势可视化技术"],a:0},
+ {q:"从整体构成上看，数字经济包括数字产业化、产业数字化、数字化治理和数据价值化四个部分。不属于数字产业化发展重点的是____。",o:["云计算","5G","大数据","物联网"],a:1},
+ {q:"基于数据与知识模型实施城市经济、社会精准化治理，推动数据要素的价值挖掘和开发利用，推进城市竞争力持续提升。依托此发展规律，可将智慧城市发展成熟度划分到____级别。",o:["规划级","引领级","协同级","优化级"],a:3},
+ {q:"随着互联网技术的发展，政务事项在一窗式办理的基础上，利用互联网技术，将实体大厅升级为网上大厅进行办理，各个政务部门的业务也只需要在同一个网上办理，上述属于“____”的模式。",o:["一网通办","一网统管","跨省通办","数字政府"],a:0},
+ {q:"系统论、控制论和____理论是 20 世纪 40 年代先后创立并获得迅猛发展的三门理论的分支学科，它们被合称为“老三论”。",o:["信息论","实践论","矛盾论","协同论"],a:0},
+ {q:"协同论中，____原理的核心思想是认为系统内部的各种子系统、参量或因素的协同作用，对系统的影响是有差异的、不平衡的，但在远离临界点时，这种差异和不平衡受到抑制，未表现出来。",o:["不稳定","序参量","支配","协同"],a:2},
+ {q:"____ refers to a network that connects any item to the Internet through information sensing devices according to agreed protocols for information exchange and communication, in order to achieve intelligent identification, positioning, tracking, monitoring, and management.",o:["Artificial Intelligence, AI","Internet of Things, IoT","Radio Frequency Identification, RFID","Micro-Electro-Mechanical Systems, MEMS"],a:1},
+ {q:"关于应用系统分层结构特点的描述，不正确的是____。",o:["各层面内部由协作元素（如子系统、组件、数据库）聚集","各层面内部为界面交互层","层面之间依靠接口实现通信","各个层面有比较确定的功能目标，并有特征明确的构造元素与构造规则"],a:1},
+ {q:"IaaS 的适用场景不包括____。",o:["Web 应用程序部署","大规模数据处理","云原生应用","备份和灾难恢复"],a:0},
+ {q:"____ 准确地描述了云计算架构的不同层次。",o:["基础设施即服务、平台即服务、软件即服务","应用层、传输层、网络层、物理层","用户界面层、应用程序层、操作系统层、硬件层","数据层、逻辑层、展示层"],a:1},
+ {q:"关于网络管理的描述，不正确的是____。",o:["ISO 专门定义了网络管理五大功能，分别是故障管理、配置管理、性能管理、计费管理、安全管理","配置管理通过各种技术手段，进行网络故障的判定和定位，为快速完成故障排除打下基础","安全管理主要提供网络中各类设备和网络管理层面的安全性管理功能，目的是保障网络安全运行","性能管理通过对网络各类性能数据的采集、分析和处理，更好地了解整个网络和其中设备的运行状况"],a:1},
+ {q:"____ 即保证信息从真实的发信者传送到真实的收信者手中，传送过程中没有被非法用户添加、删除、替换等。",o:["保密性","完整性","可用性","可控性"],a:1},
+ {q:"云原生的代码通常包括三部分：业务代码、三方软件、____。",o:["基础软件","业务库","处理非功能特性的代码","三方库"],a:0},
+ {q:"IT 审计师的决定和行动最可能影响____。",o:["固有风险","检查风险","控制风险","业务风险"],a:2},
+ {q:"____ 不属于 IT 治理的三大主要目标之一。",o:["与业务目标一致","质量控制","有效利用信息与数据资源","风险管理"],a:1},
+ {q:"____ 不属于服务需求识别活动。",o:["服务可用性需求识别","网络安全需求识别","价格需求识别","信息安全需求识别"],a:1},
+ {q:"____ 不属于服务测量的目标。",o:["验证之前所做的决策是否正确，所做的工作是否有效果","比较目前的服务在成本、质量、有效性等方面是否比之前得到了改进","比较是否超出服务范围","指导服务改进活动的方向和目标"],a:1},
+ {q:"岗位设计的主要内容包括工作内容设计、工作职责设计和____三个方面。",o:["工作目标设计","工作成效设计","工作关系设计","工作成本设计"],a:2},
+ {q:"组织流程通常可分为：战略流程、运行流程和____。",o:["改进流程","增值流程","支持流程","业务流程"],a:2},
+ {q:"应急演练原则中，____ 是为了明确演练目的，根据资源条件确定演练方式和规模。",o:["结合实际、合理定位","着眼实战、讲求实效","精心组织、确保安全","统筹规划、厉行节约"],a:0},
+ {q:"关于智慧城市的表述，不正确的是____。",o:["面向政府、企业、市民等主体提供智慧化的服务为主要模式","重点强化数据治理、数字孪生、边际决策、多元融合和态势感知五个核心能力要素建设","目标旨在推动城市治理、民生服务、生态宜居、产业经济、精神文明“五位一体”的高质量发展","主要业务包括政务服务、惠民服务、生态宜居、产业发展、区域协同五大领域"],a:3},
+ {q:"关于智慧交互体系的描述，不正确的是____。",o:["实现用户、系统、设备三者之间的交互","交互平台内容包括统一用户管理、单点登录、多渠道接入","内部门户主要是面向功能企业、枢纽管理经营者、政府监督部门","数字孪生中枢为交互体系提供支撑"],a:0},
+ {q:"以下相关描述，不正确的是____。",o:["数字农业是农业现代化的核心","数字乡村是农村现代化的基础","乡村数字经济是数字乡村的重要组成部分","信息数字技术是制约数字乡村发展的关键因素之一"],a:3},
+ {q:"数字乡村发展关注焦点，不包括____。",o:["乡村数字经济","乡村数字技术","乡村数字服务","乡村数字治理"],a:1},
+ {q:"企业数字化转型的能力成熟度分为____个级别。",o:["6","5","4","3"],a:1},
+ {q:"企业为了推进智能制造，需要培养和发展____四大类人才。",o:["软件开发、系统集成、信息安全、数据分析","技能人才、应用人才、推进人才、领军人才","装备设计、工艺研发、作业调度、安全环保","软件开发、数据集成、装备设计、工艺研发"],a:1},
+ {q:"关于智能制造发展规划中的诊断评估的理解，不正确的是____。",o:["诊断评估可以借鉴 CMMM","由低级向高级演进，直到找到企业当前所处的成熟度水平","诊断评估是在现状调研基础上，按照成熟度的模式，评估企业所处水平","诊断评估是对标行业先进企业最佳实践的差距分析"],a:3},
+ {q:"针对新型消费系统规划要点的描述，不正确的是____。",o:["收集用户需求和期望。可以通过问卷调查、用户访谈、数据挖掘等方式收集用户需求和期望，以便更好地满足用户的需求","策划用户体验的发布策略，逐步引导用户的体验","注重联合营销接口的支撑能力，便于后期与其他平台的联合拓展","强调新技术的使用，在各部分部署最新的信息数字技术"],a:3},
+ {q:"____ 不属于新型消费系统架构需要考虑的能力。",o:["处理大量用户请求能力","互联网接入能力","数据安全和隐私保护能力","多终端支持能力"],a:1},
+ {q:"中国特色社会主义法律体系以____为统帅。",o:["宪法","法律","行政法规","道德"],a:0},
+ {q:"根据我国《标准化法》的规定，行业标准由____制定。",o:["国务院有关行政主管部门","国务院标准化行政主管部门","地方标准化行政主管部门","企业协会"],a:0},
+ {q:"我国国家标准有效期一般为____年。",o:["3 年","5 年","8 年","10 年"],a:1}
+];
+
+const TF = [
+ {q:"规划过程组是为了完成项目管理计划中确定的工作，以满足项目要求。",a:false},
+ {q:"项目管理者在遵守内部和外部准则的同时，应该以负责任的方式行事，以正直、关心和可信的态度开展活动，同时对自身所负责的项目的工作，以满足项目要求。这体现了“展现领导力行为”的原则。",a:false},
+ {q:"项目绩效域是项目执行过程中需要密切关注的相互作用、相互关联和相互依赖的领域，它们可以协调一致地实现预期的项目成果。",a:true},
+ {q:"项目可通过提高效率、生产力、效果或响应能力创造价值。",a:true},
+ {q:"放任型领导关注他人的成长、学习、发展、自主性和福利。",a:false}
+];
+
+const CASE = [
+ {tag:"①",q:"案例中一级服务回顾（针对重大事件、特殊事件的沟通）的频率应为____。",o:["每周","每季度","不定期按需沟通","每年度"],a:2},
+ {tag:"②",q:"案例中二级服务回顾（项目月度例会）的频率应为____。",o:["每周","每季度","每月度","每年度"],a:1},
+ {tag:"③",q:"以上四级服务回顾中，第三级回顾的参与者分别是____。",o:["小王、银行 X 项目接口人","小王、银行 X 项目接口人、银行 X 项目经理","小王、银行 X 项目接口人、银行 X 项目责任经理","小王、银行 X 项目接口人、银行 X 项目经理、银行 X 项目高层管理者"],a:1},
+ {tag:"④",q:"下列不建议作为服务回顾形式的是____。",o:["X 项目年度服务报告","X 项目阶段内部会议","第三方机构对该银行的意见收集","客户回顾、团队内部回顾"],a:3},
+ {tag:"⑤",q:"根据服务供需双方关注内容的不同，服务回顾的主要活动可以分为____。",o:["客户回顾、团队内部回顾","管理层回顾、操作层回顾","业务团队回顾、交付团队回顾","客户回顾、用户回顾"],a:0},
+ {tag:"⑥",q:"服务回顾工作可与____会议一起举行。",o:["项目启动会","服务质量评审会议","人员职称评审会","运维工具评审会"],a:1}
+];
+
+const ESSAYS = [
+ {q:"智慧城市规划需要考虑的因素有哪些。",ref:`<ul><li>城市发展战略与定位：城市总体规划、产业定位与发展目标。</li><li>城市基础条件：人口规模与结构、经济发展水平、产业基础。</li><li>信息化基础：信息基础设施、数据资源现状、已有信息系统建设情况。</li><li>治理与民生需求：城市治理痛点、公共服务需求、生态宜居要求。</li><li>保障条件：资金保障、人才队伍、组织机制与政策法规。</li><li>安全与标准：信息安全保障体系、数据标准与规范体系。</li><li>区域协同：与周边城市的协同发展与资源共享。</li></ul>`},
+ {q:"对于数字人才相对丰盈地区与相对匮乏地区，智慧城市规划侧重点有何不同？",ref:`<ul><li><b>人才丰盈地区</b>：侧重高端应用创新，如人工智能、数字孪生、大数据等前沿技术落地；侧重平台化运营与数据价值挖掘；可强调能力输出，建设区域级智慧城市运营与创新中心。</li><li><b>人才匮乏地区</b>：侧重信息化基础设施补短板和成熟技术应用的普及推广；侧重本地化人才培养与引进机制建设；可借助外部力量（外包、云服务、东西部协作）以用促建，避免重建设轻运营。</li></ul>`},
+ {q:"请指出智慧园区的发展阶段，并说明每个阶段的重点任务有哪些。",ref:`<ul><li><b>初始建设阶段</b>：完善网络、感知等基础设施，建设基础信息系统，实现单点业务信息化。</li><li><b>集成提升阶段</b>：推动系统集成与数据共享，打通信息孤岛，建设统一的园区运营管理平台。</li><li><b>智慧融合阶段</b>：以数据驱动运营，实现智能监控、智能决策与业务协同，提升园区整体运行效率。</li><li><b>生态创新阶段</b>：构建产业生态与创新服务体系，实现园区可持续运营与价值创造。</li></ul>`},
+ {q:"请简述智慧园区运维与运营体系规划的主要内容。",ref:`<ul><li>运维体系：运维组织架构与职责分工、运维流程与制度、监控告警与故障处理机制、SLA 服务级别管理、运维工具平台。</li><li>运营体系：园区运营内容与模式（招商、物业、企业服务、社区服务）、服务目录与定价、运营团队与绩效考核、增值服务与产业生态培育。</li><li>保障体系：安全保障、数据管理、资金与商业模式、持续改善机制。</li></ul>`},
+ {q:"针对我国东部沿海地区农业农村发展情况，列出其数字乡村相关规划的主要聚焦点。",ref:`<ul><li>乡村数字经济：智慧农业、农产品电商、乡村文旅数字化。</li><li>乡村数字治理：基层治理数字化、“互联网+政务服务”向乡村延伸。</li><li>乡村数字服务：教育、医疗、养老等公共服务数字化。</li><li>数字人才引育：新型职业农民培育、返乡创业数字化人才支持。</li><li>基础设施提档升级：农村 5G、物联网、冷链物流数字设施。</li></ul>`},
+ {q:"针对以物流为业务重点的企业，其开展数字化转型的驱动力包括哪些？",ref:`<ul><li>客户需求驱动：客户对物流时效性、可视化、个性化服务要求不断提高。</li><li>降本增效驱动：人力成本上升，需要通过自动化、智能化降低运营成本。</li><li>市场竞争驱动：行业平台化、头部化竞争加剧，倒逼数字化能力建设。</li><li>技术驱动：物联网、大数据、人工智能、无人技术逐步成熟。</li><li>政策驱动：双碳目标、交通物流领域数字化转型政策要求。</li><li>供应链协同驱动：产业链上下游信息共享与协同的需要。</li></ul>`},
+ {q:"数字人才在企业数字化转型中的关键价值是什么？如何培育相关人才？",ref:`<ul><li>关键价值：数字化战略的执行落地；技术与业务的融合翻译；数据资产的管理与价值挖掘；推动组织变革与流程再造；数字创新业务的孵化。</li><li>培育方式：外部引进与内部培养相结合；开展分层分类培训（管理层数字思维、业务人员数字技能、技术人员专业能力）；产学研合作与实训基地；建立激励机制与职业发展通道；营造数字化文化。</li></ul>`},
+ {q:"企业数字化转型系统规划主要包括哪些活动和内容？",ref:`<ul><li>现状诊断：评估企业数字化基础与成熟度，识别差距。</li><li>战略与目标制定：明确数字化转型愿景、目标与范围。</li><li>业务架构设计：业务流程优化与业务模式创新。</li><li>应用与数据架构规划：应用系统布局、数据资源规划。</li><li>技术架构规划：基础设施、云平台、网络安全等。</li><li>实施路线与治理：项目优先级、里程碑、组织与制度保障。</li></ul>`},
+ {q:"请针对自身对制造企业的理解，阐述智能制造发展规划的关键过程。",ref:`<ul><li>现状诊断评估：借鉴 CMMM 等模型开展智能制造能力成熟度评估，明确所处水平与差距。</li><li>目标与蓝图制定：确定智能制造发展目标与总体蓝图。</li><li>总体架构设计：智能装备、工业网络、信息系统（MES/ERP/PLM）、工业数据平台的总体架构。</li><li>重点任务与项目规划：智能产线、数字化车间、智能工厂等专项规划。</li><li>实施路径与保障：分阶段推进计划，以及资金、人才、标准、安全等保障措施。</li></ul>`},
+ {q:"针对目前比较流行的共享经济，其业务逻辑本质和相关系统规划该如何定义？",ref:`<ul><li>业务逻辑本质：整合线下闲置资源（物品、空间、技能、时间），通过平台实现供需双方的高效匹配与复用，以使用权替代所有权，提高社会资源利用效率。</li><li>系统规划要点：平台撮合与调度系统（供需匹配、动态定价、路径/资源调度）；用户与信用体系（实名认证、信用评价、风控）；支付与结算系统；数据运营与精准推荐；合规与监管接口（准入、安全、税务）。</li></ul>`},
+ {q:"站在消费品生产企业角度，如何部署其线上营销体系或系统？如何有效管控线上线下的一体化营销？",ref:`<ul><li>线上营销体系：全渠道触点布局（电商平台、社交电商、直播、短视频、私域社群）；建设会员体系与营销数据中台，实现用户画像与精准营销；内容营销与品牌数字化运营。</li><li>一体化管控：统一价格与促销策略，防止渠道冲突；线上线下库存、订单、会员数据打通；统一的服务与售后标准；以数据度量各渠道效果，动态调配资源，实现 O2O 协同。</li></ul>`},
+ {q:"应用系统规划过程主要涉及哪些方面？",ref:`<ul><li>需求分析：业务需求与用户需求收集分析。</li><li>现状评估：现有应用系统、数据、技术基础评估。</li><li>目标与范围确定：明确建设目标、边界与约束条件。</li><li>架构设计：应用架构、数据架构、技术架构设计。</li><li>方案规划：技术选型、部署方案、迁移与集成方案。</li><li>实施规划：项目计划、资源估算、治理与运维安排。</li></ul>`},
+ {q:"常见的云计算架构模式和解决方案有哪些？",ref:`<ul><li>服务模式：IaaS、PaaS、SaaS。</li><li>部署模式：公有云、私有云、混合云、多云。</li><li>解决方案：云原生架构（容器、微服务、DevOps）、Serverless、云灾备与数据迁移方案、混合云管理与统一纳管方案、行业云解决方案。</li></ul>`},
+ {q:"云资源规划的发展趋势和挑战？",ref:`<ul><li>趋势：混合多云成为主流；云原生与容器化广泛应用；FinOps 云成本优化管理兴起；云边端协同；绿色低碳云计算。</li><li>挑战：云成本失控风险；安全与合规挑战；厂商锁定问题；云资源治理复杂；云专业人才短缺。</li></ul>`},
+ {q:"数据资源规划的方法和技术有哪些？",ref:`<ul><li>方法：数据架构设计、数据建模、数据资产目录梳理、数据治理体系设计（数据标准、数据质量、元数据、主数据管理）。</li><li>技术：数据集成与交换技术、数据仓库与湖仓一体、数据清洗与质量管理工具、数据安全与隐私计算技术、数据可视化与数据分析平台。</li></ul>`},
+ {q:"信息安全规划的主要内容包括哪些？",ref:`<ul><li>安全策略与体系框架：总体安全方针、组织与制度体系。</li><li>合规要求：等级保护、数据安全与个人信息保护合规。</li><li>技术体系：网络与边界安全、主机与应用安全、数据安全、身份与访问管理。</li><li>运营体系：安全监测、应急响应、攻防演练、安全意识培训。</li></ul>`},
+ {q:"请指出大数据的特点，并根据你的理解简要叙述大数据有哪些重要应用领域。",ref:`<ul><li>特点（5V）：Volume 体量大、Velocity 速度快、Variety 类型多、Value 价值密度低但总价值高、Veracity 真实性与质量要求高。</li><li>应用领域：金融风控与精准营销、智慧城市与城市治理、医疗健康、工业制造（预测性维护、质量优化）、交通物流、政务服务等。</li></ul>`},
+ {q:"物联网（IoT）是什么？",ref:`<ul><li>物联网（Internet of Things）是指通过信息传感设备，按约定的协议，把任何物品与互联网相连接，进行信息交换和通信，以实现对物品的智能化识别、定位、跟踪、监控和管理的网络。其核心是“物物相连的互联网”，关键技术包括 RFID、传感器、嵌入式系统、无线通信、边缘计算等。</li></ul>`}
+];
+
+/* ================= 考试逻辑 ================= */
+const MCQ_SCORE = 2, TF_SCORE = 2, CASE_SCORE = 3;
+const LETTERS = ["A","B","C","D"];
+const SAVE_KEY = "spmg_exam_state_v1";    // 进行中考试的自动存档
+const RESULT_KEY = "spmg_exam_results_v1"; // 历史成绩记录
+let submitted = false;
+let started = false;
+let seconds = 0;
+let timerInt = null;
+
+/* ===== 本地存储 ===== */
+function collectState(){
+  const answers = {mcq:{}, tf:{}, case:{}};
+  AMCQ.forEach((_, i) => { const a = getAnswer("mcq-"+i);  if (a !== null) answers.mcq[i] = a; });
+  ATF.forEach((_, i)  => { const a = getAnswer("tf-"+i);   if (a !== null) answers.tf[i] = a; });
+  ACASE.forEach((_, i) => { const a = getAnswer("case-"+i); if (a !== null) answers.case[i] = a; });
+  const essays = {};
+  AESSAYS.forEach((_, i) => {
+    const el = document.getElementById("essay-"+i);
+    if (el && el.value.trim()) essays[i] = el.value;
+  });
+  return { sel:{...SEL}, answers, essays, seconds, savedAt: Date.now() };
+}
+function saveState(){
+  if (!started || submitted) return;
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(collectState())); } catch(e){}
+}
+function loadState(){
+  try {
+    const s = localStorage.getItem(SAVE_KEY);
+    return s ? JSON.parse(s) : null;
+  } catch(e){ return null; }
+}
+function clearState(){
+  try { localStorage.removeItem(SAVE_KEY); } catch(e){}
+}
+function saveResult(got, full, pct){
+  try {
+    const list = JSON.parse(localStorage.getItem(RESULT_KEY) || "[]");
+    list.unshift({ date: new Date().toISOString(), got, full, pct, seconds, sel: {...SEL} });
+    localStorage.setItem(RESULT_KEY, JSON.stringify(list.slice(0, 50)));
+  } catch(e){}
+}
+window.addEventListener("beforeunload", saveState);
+
+/* 当前选中的考试范围 */
+let SEL = { mcq:true, tf:true, case:true, essay:true };
+let AMCQ = [], ATF = [], ACASE = [], AESSAYS = [];
+
+/* ===== 开始界面交互 ===== */
+document.querySelectorAll(".mode-card").forEach(card => {
+  card.addEventListener("click", () => {
+    const mode = card.dataset.mode;
+    if (mode === "all"){
+      const allOn = SEL.mcq && SEL.tf && SEL.case && SEL.essay;
+      SEL = { mcq:!allOn, tf:!allOn, case:!allOn, essay:!allOn };
+    } else {
+      SEL[mode] = !SEL[mode];
+    }
+    syncModeCards();
+  });
+});
+
+function syncModeCards(){
+  document.querySelectorAll(".mode-card").forEach(card => {
+    const mode = card.dataset.mode;
+    card.classList.toggle("active", mode === "all" ? (SEL.mcq && SEL.tf && SEL.case && SEL.essay) : SEL[mode]);
+  });
+  document.getElementById("start-hint").textContent = "";
+}
+
+document.getElementById("btn-start").addEventListener("click", () => {
+  if (!(SEL.mcq || SEL.tf || SEL.case || SEL.essay)){
+    document.getElementById("start-hint").textContent = "请至少选择一种题型再开始考试";
+    return;
+  }
+  startExam();
+});
+
+function startExam(){
+  document.getElementById("start-screen").style.display = "none";
+  document.getElementById("intro").style.display = "block";
+  document.getElementById("submit-bar").style.display = "flex";
+  started = true;
+
+  AMCQ  = SEL.mcq  ? MCQ  : [];
+  ATF   = SEL.tf   ? TF   : [];
+  ACASE = SEL.case ? CASE : [];
+  AESSAYS = SEL.essay ? ESSAYS : [];
+
+  document.getElementById("sec-mcq").style.display   = SEL.mcq   ? "" : "none";
+  document.getElementById("sec-tf").style.display    = SEL.tf    ? "" : "none";
+  document.getElementById("sec-case").style.display  = SEL.case  ? "" : "none";
+  document.getElementById("sec-essay").style.display = SEL.essay ? "" : "none";
+
+  /* 考试说明 */
+  const lines = [];
+  if (SEL.mcq)   lines.push(`<li>选择题 ${AMCQ.length} 题，每题 ${MCQ_SCORE} 分，共 ${AMCQ.length*MCQ_SCORE} 分。</li>`);
+  if (SEL.tf)    lines.push(`<li>判断题 ${ATF.length} 题，每题 ${TF_SCORE} 分，共 ${ATF.length*TF_SCORE} 分。</li>`);
+  if (SEL.case)  lines.push(`<li>案例题 ${ACASE.length} 小题，每题 ${CASE_SCORE} 分，共 ${ACASE.length*CASE_SCORE} 分。</li>`);
+  if (SEL.essay) lines.push(`<li>思考题 ${AESSAYS.length} 题，开放式问答，<b>不计入总分</b>，交卷后展示参考答案。</li>`);
+  lines.push(`<li>本次卷面满分 <b>${AMCQ.length*MCQ_SCORE + ATF.length*TF_SCORE + ACASE.length*CASE_SCORE}</b> 分；交卷前不显示任何答案。</li>`);
+  document.getElementById("intro-list").innerHTML = lines.join("");
+
+  renderAll();
+  updateProgress();
+
+  /* 正计时从此刻开始 */
+  timerInt = setInterval(() => { seconds++; document.getElementById("timer").textContent = fmt(seconds); saveState(); }, 1000);
+  window.scrollTo({top:0});
+  saveState();
+}
+
+/* ===== 渲染 ===== */
+function renderAll(){
+  const mcqList = document.getElementById("mcq-list");
+  AMCQ.forEach((item, i) => {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `<div class="q-head"><span class="idx">${i+1}.</span><span class="qt">${item.q}</span></div>
+      <div class="opts">${item.o.map((op, j) =>
+        `<label class="opt" data-q="mcq-${i}" data-v="${j}"><span class="letter">${LETTERS[j]}</span><span>${op}</span></label>`).join("")}
+      </div>
+      <div class="answer-line" id="ans-mcq-${i}"></div>`;
+    mcqList.appendChild(card);
+  });
+  document.getElementById("mcq-meta").textContent = `共 ${AMCQ.length} 题，每题 ${MCQ_SCORE} 分`;
+
+  const tfList = document.getElementById("tf-list");
+  ATF.forEach((item, i) => {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `<div class="q-head"><span class="idx">${i+1}.</span><span class="qt">${item.q}</span></div>
+      <div class="judge-opts">
+        <label class="opt" data-q="tf-${i}" data-v="1"><span class="letter">√</span><span>正确</span></label>
+        <label class="opt" data-q="tf-${i}" data-v="0"><span class="letter">×</span><span>错误</span></label>
+      </div>
+      <div class="answer-line" id="ans-tf-${i}"></div>`;
+    tfList.appendChild(card);
+  });
+
+  const caseList = document.getElementById("case-list");
+  ACASE.forEach((item, i) => {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `<div class="q-head"><span class="idx">（${item.tag}）</span><span class="qt">${item.q}</span></div>
+      <div class="opts">${item.o.map((op, j) =>
+        `<label class="opt" data-q="case-${i}" data-v="${j}"><span class="letter">${LETTERS[j]}</span><span>${op}</span></label>`).join("")}
+      </div>
+      <div class="answer-line" id="ans-case-${i}"></div>`;
+    caseList.appendChild(card);
+  });
+
+  const essayList = document.getElementById("essay-list");
+  AESSAYS.forEach((item, i) => {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `<div class="q-head"><span class="idx">${i+1}.</span><span class="qt">${item.q}</span></div>
+      <textarea id="essay-${i}" placeholder="请在此作答……"></textarea>
+      <div class="ref-answer" id="ref-${i}"><h4>参考答案</h4>${item.ref}</div>`;
+    essayList.appendChild(card);
+    card.querySelector("textarea").addEventListener("input", saveState);
+  });
+
+  document.querySelectorAll(".opt").forEach(el => {
+    el.addEventListener("click", () => {
+      if (submitted) return;
+      const q = el.dataset.q;
+      document.querySelectorAll(`.opt[data-q="${q}"]`).forEach(o => o.classList.remove("selected"));
+      el.classList.add("selected");
+      updateProgress();
+      saveState();
+    });
+  });
+}
+
+function getAnswer(qid){
+  const sel = document.querySelector(`.opt[data-q="${qid}"].selected`);
+  return sel ? Number(sel.dataset.v) : null;
+}
+
+function updateProgress(){
+  let done = 0, total = 0;
+  AMCQ.forEach((_, i) => { total++; if (getAnswer("mcq-"+i) !== null) done++; });
+  ATF.forEach((_, i) => { total++; if (getAnswer("tf-"+i) !== null) done++; });
+  ACASE.forEach((_, i) => { total++; if (getAnswer("case-"+i) !== null) done++; });
+  let text = `已作答 ${done} / ${total} 题`;
+  if (AESSAYS.length) text += `（另有思考题 ${AESSAYS.length} 题不计分）`;
+  document.getElementById("progress-pill").textContent = text;
+}
+
+function fmt(s){
+  const h = String(Math.floor(s/3600)).padStart(2,"0");
+  const m = String(Math.floor(s%3600/60)).padStart(2,"0");
+  const sec = String(s%60).padStart(2,"0");
+  return `${h}:${m}:${sec}`;
+}
+
+/* ===== 交卷 ===== */
+document.getElementById("btn-submit").addEventListener("click", () => {
+  const total = AMCQ.length + ATF.length + ACASE.length;
+  let done = 0;
+  AMCQ.forEach((_, i) => { if (getAnswer("mcq-"+i) !== null) done++; });
+  ATF.forEach((_, i) => { if (getAnswer("tf-"+i) !== null) done++; });
+  ACASE.forEach((_, i) => { if (getAnswer("case-"+i) !== null) done++; });
+  document.getElementById("modal-text").textContent =
+    done === total ? "已答完全部计分题目，确定要交卷吗？" : `还有 ${total-done} 道计分题未作答，未作答的题目将不得分。确定要交卷吗？`;
+  document.getElementById("modal").classList.add("open");
+});
+document.getElementById("btn-cancel").addEventListener("click", () => document.getElementById("modal").classList.remove("open"));
+document.getElementById("btn-confirm").addEventListener("click", () => {
+  document.getElementById("modal").classList.remove("open");
+  submitExam();
+});
+
+function markQuestion(qid, correctIdx, userAns, ansElId, fullText){
+  const opts = document.querySelectorAll(`.opt[data-q="${qid}"]`);
+  opts.forEach(o => {
+    o.classList.add("locked");
+    const v = Number(o.dataset.v);
+    if (v === correctIdx) o.classList.add("correct");
+    else if (userAns !== null && v === userAns) o.classList.add("wrong");
+  });
+  const line = document.getElementById(ansElId);
+  const letter = LETTERS[correctIdx];
+  if (userAns === null){
+    line.innerHTML = `<span class="badge unanswered">未作答</span> 正确答案：<b>${letter}</b>（${fullText}）`;
+  } else if (userAns === correctIdx){
+    line.innerHTML = `<span class="ok">✓ 回答正确。</span> 正确答案：<b>${letter}</b>（${fullText}）`;
+  } else {
+    line.innerHTML = `<span class="no">✗ 回答错误，你的选择：${LETTERS[userAns]}。</span> 正确答案：<b>${letter}</b>（${fullText}）`;
+  }
+  line.classList.add("show");
+}
+
+function submitExam(){
+  if (submitted) return;
+  submitted = true;
+  clearInterval(timerInt);
+  document.getElementById("timer").textContent = fmt(seconds);
+
+  let mcqGot = 0, tfGot = 0, caseGot = 0;
+
+  AMCQ.forEach((item, i) => {
+    const ans = getAnswer("mcq-"+i);
+    if (ans === item.a) mcqGot++;
+    markQuestion("mcq-"+i, item.a, ans, "ans-mcq-"+i, item.o[item.a]);
+  });
+  ATF.forEach((item, i) => {
+    const ans = getAnswer("tf-"+i);
+    const correctIdx = item.a ? 1 : 0;
+    if (ans === correctIdx) tfGot++;
+    const opts = document.querySelectorAll(`.opt[data-q="tf-${i}"]`);
+    opts.forEach(o => {
+      o.classList.add("locked");
+      const v = Number(o.dataset.v);
+      if (v === correctIdx) o.classList.add("correct");
+      else if (ans !== null && v === ans) o.classList.add("wrong");
+    });
+    const line = document.getElementById("ans-tf-"+i);
+    if (ans === null) line.innerHTML = `<span class="badge unanswered">未作答</span> 正确答案：<b>${item.a ? "√ 正确" : "× 错误"}</b>`;
+    else if (ans === correctIdx) line.innerHTML = `<span class="ok">✓ 回答正确。</span> 正确答案：<b>${item.a ? "√ 正确" : "× 错误"}</b>`;
+    else line.innerHTML = `<span class="no">✗ 回答错误，你的选择：${ans === 1 ? "√" : "×"}。</span> 正确答案：<b>${item.a ? "√ 正确" : "× 错误"}</b>`;
+    line.classList.add("show");
+  });
+  ACASE.forEach((item, i) => {
+    const ans = getAnswer("case-"+i);
+    if (ans === item.a) caseGot++;
+    markQuestion("case-"+i, item.a, ans, "ans-case-"+i, item.o[item.a]);
+  });
+
+  AESSAYS.forEach((_, i) => {
+    document.getElementById("essay-"+i).disabled = true;
+    document.getElementById("ref-"+i).classList.add("show");
+  });
+
+  const mcqFull = AMCQ.length * MCQ_SCORE, tfFull = ATF.length * TF_SCORE, caseFull = ACASE.length * CASE_SCORE;
+  const mcqScore = mcqGot * MCQ_SCORE, tfScore = tfGot * TF_SCORE, caseScore = caseGot * CASE_SCORE;
+  const full = mcqFull + tfFull + caseFull;
+  const got = mcqScore + tfScore + caseScore;
+  const pct = full ? Math.round(got / full * 100) : 0;
+  const verdict = pct >= 90 ? "非常优秀！已具备扎实的理论基础，可冲击高分通过。" :
+                  pct >= 75 ? "良好！多数知识点已掌握，建议针对错题查漏补缺。" :
+                  pct >= 60 ? "及格水平。建议回归课本，重点复习错题对应章节。" :
+                  "尚未达标。建议系统复习教程各篇内容后再次挑战。";
+
+  const cells = [];
+  if (AMCQ.length)  cells.push(`<div class="score-cell"><div class="t">选择题（每题 ${MCQ_SCORE} 分）</div><div class="v">${mcqScore}<small> / ${mcqFull} 分，答对 ${mcqGot}/${AMCQ.length} 题</small></div></div>`);
+  if (ATF.length)   cells.push(`<div class="score-cell"><div class="t">判断题（每题 ${TF_SCORE} 分）</div><div class="v">${tfScore}<small> / ${tfFull} 分，答对 ${tfGot}/${ATF.length} 题</small></div></div>`);
+  if (ACASE.length) cells.push(`<div class="score-cell"><div class="t">案例题（每题 ${CASE_SCORE} 分）</div><div class="v">${caseScore}<small> / ${caseFull} 分，答对 ${caseGot}/${ACASE.length} 题</small></div></div>`);
+  if (AESSAYS.length) cells.push(`<div class="score-cell"><div class="t">思考题（不计分）</div><div class="v">${AESSAYS.length}<small> 题，参考答案已展示</small></div></div>`);
+
+  const result = document.getElementById("result");
+  result.style.display = "block";
+  result.innerHTML = `
+    <div class="score-hero">
+      <div class="big">${got}<span style="font-size:24px;font-weight:600;"> / ${full} 分</span></div>
+      <div class="total">百分制成绩：${pct} 分 ｜ 考试用时：${fmt(seconds)}</div>
+      <div class="verdict">${verdict}</div>
+    </div>
+    <div class="score-grid">${cells.join("")}</div>
+    <div style="text-align:center;margin-bottom:40px;">
+      <button class="btn btn-ghost" onclick="location.reload()">返回首页重新选择</button>
+    </div>
+    <h3 style="margin:0 0 12px;">试卷回顾（绿色为正确答案，红色为你的错误选项）</h3>`;
+  document.getElementById("submit-bar").style.display = "none";
+  clearState();
+  saveResult(got, full, pct);
+  result.scrollIntoView({behavior:"smooth"});
+}
+
+/* ===== 恢复未完成的考试 ===== */
+(function initResume(){
+  const saved = loadState();
+  if (!saved || !saved.sel) return;
+  const banner = document.getElementById("resume-banner");
+  const ansCount = Object.keys(saved.answers.mcq || {}).length
+                 + Object.keys(saved.answers.tf || {}).length
+                 + Object.keys(saved.answers.case || {}).length;
+  const totalQ = (saved.sel.mcq ? MCQ.length : 0)
+               + (saved.sel.tf ? TF.length : 0)
+               + (saved.sel.case ? CASE.length : 0);
+  document.getElementById("resume-info").textContent =
+    `已用时 ${fmt(saved.seconds || 0)}，已作答 ${ansCount}/${totalQ} 题`;
+  banner.style.display = "block";
+
+  document.getElementById("btn-resume").addEventListener("click", () => {
+    SEL = Object.assign({mcq:false, tf:false, case:false, essay:false}, saved.sel);
+    startExam();
+    seconds = saved.seconds || 0;
+    document.getElementById("timer").textContent = fmt(seconds);
+    ["mcq","tf","case"].forEach(type => {
+      Object.entries(saved.answers[type] || {}).forEach(([i, v]) => {
+        const el = document.querySelector(`.opt[data-q="${type}-${i}"][data-v="${v}"]`);
+        if (el) el.click();
+      });
+    });
+    Object.entries(saved.essays || {}).forEach(([i, val]) => {
+      const el = document.getElementById("essay-"+i);
+      if (el) el.value = val;
+    });
+    updateProgress();
+    saveState();
+  });
+
+  document.getElementById("btn-discard").addEventListener("click", () => {
+    clearState();
+    banner.style.display = "none";
+  });
+})();
+</script>
+</body>
+</html>
